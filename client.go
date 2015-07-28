@@ -11,12 +11,10 @@ import (
 const ROOT = "https://api.twilio.com"
 const VERSION = "2010-04-01"
 
-type HttpClientFactory func() *http.Client
-
-var HttpClientFactory HttpClientFactory
+var HttpClientFactory func() *http.Client
 
 func init() {
-	HttpClientFactory = func() {
+	HttpClientFactory = func() *http.Client {
 		return &http.Client{}
 	}
 }
