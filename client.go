@@ -6,15 +6,16 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"golang.org/x/net/context"
 )
 
 const ROOT = "https://api.twilio.com"
 const VERSION = "2010-04-01"
 
-var HttpClientFactory func() *http.Client
+var HttpClientFactory func(context.Context) *http.Client
 
 func init() {
-	HttpClientFactory = func() *http.Client {
+	HttpClientFactory = func(c context.Context) *http.Client {
 		return &http.Client{}
 	}
 }
@@ -31,11 +32,12 @@ type TwilioClient struct {
 	accountSid string
 	authToken  string
 	rootUrl    string
+	context    context.Context
 }
 
-func NewClient(accountSid, authToken string) *TwilioClient {
+func NewClient(accountSid, authToken string, context context.Context) *TwilioClient {
 	rootUrl := "/" + VERSION + "/Accounts/" + accountSid
-	return &TwilioClient{accountSid, authToken, rootUrl}
+	return &TwilioClient{accountSid, authToken, rootUrl, context}
 }
 
 func (client *TwilioClient) post(values url.Values, uri string) ([]byte, error) {
@@ -47,7 +49,7 @@ func (client *TwilioClient) post(values url.Values, uri string) ([]byte, error) 
 
 	req.SetBasicAuth(client.AccountSid(), client.AuthToken())
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	httpClient := HttpClientFactory()
+	httpClient := HttpClientFactory(client.context)
 
 	res, err := httpClient.Do(req)
 
@@ -91,7 +93,7 @@ func (client *TwilioClient) get(queryParams url.Values, uri string) ([]byte, err
 	}
 
 	req.SetBasicAuth(client.AccountSid(), client.AuthToken())
-	httpClient := HttpClientFactory()
+	httpClient := HttpClientFactory(client.context)
 
 	res, err := httpClient.Do(req)
 
