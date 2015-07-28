@@ -11,6 +11,16 @@ import (
 const ROOT = "https://api.twilio.com"
 const VERSION = "2010-04-01"
 
+type HttpClientFactory func() *http.Client
+
+var HttpClientFactory HttpClientFactory
+
+func init() {
+	HttpClientFactory = func() {
+		return &http.Client{}
+	}
+}
+
 type Client interface {
 	AccountSid() string
 	AuthToken() string
@@ -39,7 +49,7 @@ func (client *TwilioClient) post(values url.Values, uri string) ([]byte, error) 
 
 	req.SetBasicAuth(client.AccountSid(), client.AuthToken())
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	httpClient := &http.Client{}
+	httpClient := HttpClientFactory()
 
 	res, err := httpClient.Do(req)
 
@@ -83,7 +93,7 @@ func (client *TwilioClient) get(queryParams url.Values, uri string) ([]byte, err
 	}
 
 	req.SetBasicAuth(client.AccountSid(), client.AuthToken())
-	httpClient := &http.Client{}
+	httpClient := HttpClientFactory()
 
 	res, err := httpClient.Do(req)
 
