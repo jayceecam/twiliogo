@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
 	"golang.org/x/net/context"
 )
 
@@ -16,7 +17,10 @@ var HttpClientFactory func(context.Context) *http.Client
 
 func init() {
 	HttpClientFactory = func(c context.Context) *http.Client {
-		return &http.Client{}
+		transprt := http.Transport{}
+		return &http.Client{
+			Transport: &transprt,
+		}
 	}
 }
 
